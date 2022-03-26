@@ -7,6 +7,5 @@ const worker2 = new Worker("./timer/birthday_timer.js");
 // but in this scenario i use interval every 3 second for simple debuggging
 
 //first arg for interval timer
-//second arg for which hours we want to deliver an message to hookbin
 worker1.postMessage(3);
 worker2.postMessage(3);
