@@ -1,5 +1,15 @@
+const { threadId, parentPort } = require("worker_threads");
 const pool = require("../db/db");
 const https = require("https");
+
+let daily_interval = 3;
+//set time to deliver, 9am
+let h_time = 10;
+
+parentPort.addListener("interval", (interval) => {
+  daily_interval = interval;
+  parentPort.close();
+});
 
 const data = {
   message: "",
@@ -15,6 +25,7 @@ const options = {
   },
 };
 
+//get local date
 function calcTime(city, offset) {
   var b = new Date();
   var utc = b.getTime() + b.getTimezoneOffset() * 60000;
@@ -22,14 +33,14 @@ function calcTime(city, offset) {
   return nd;
 }
 
-//get data from user table (interval = everyday), but in this scenario i use interval every 3 second
+//get data from user table (interval = everyday) = 1000 * 60 * 24,
+//but in this scenario i use interval every 3 second for simple debuggging
+
 const test = setInterval(() => {
   pool.query(
     "Select to_char(birthday, 'mm-dd') as month, id, f_name,l_name, location, gmt_offset from public.user",
     (err, res) => {
       if (!err) {
-        //set time to deliver
-        let h_time = 9;
         //checking current month, if match with birthday month then checking day, if not continue
         for (let i = 0; i < res.rows.length; i++) {
           //get birthday month and day
@@ -48,6 +59,7 @@ const test = setInterval(() => {
             if (h_time == c_hour) {
               // console.info("User hour : " + c_hour);
               console.log("User location : " + res.rows[i].location);
+              console.log(`Hey, ${res.rows[i].f_name} it's your birthday`);
               data.message = `Hey, ${res.rows[i].f_name} it's your birthday`;
               //send message to hookbin
               const req = https.request(options, (res) => {
@@ -59,20 +71,17 @@ const test = setInterval(() => {
             }
           } else {
             //next user
+            // console.log("User location : " + res.rows[i].location);
+            // console.log("User time : " + res.rows[i].location);
             console.log("not birthday date");
           }
         }
-
-        // with next user
-        // return console.log(res.rows);
-        // //checking every hour, if mo
-        // const test = setInterval(() => {}, 2000);
       } else {
         console.info(err.message);
       }
       pool.end;
     }
   );
-}, 3000);
+}, daily_interval);
 
 module.exports = test;
