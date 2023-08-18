@@ -70,16 +70,20 @@ router.post("/", (req, res) => {
 });
 
 //delete
-// router.delete("/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const deleteUser = await pool.query("delete from public.user where id=$1", [
-//       id,
-//     ]);
-//     res.json("User was successfully deleted");
-//   } catch (err) {
-//     console.error(err.message);
-//   }
-// });
+router.delete("/result", (req, res) => {
+  try {
+    const { name, items } = req.body;
+
+    items.map((item, index) => {
+      const deleteItems = pool.query(
+        "delete from public.user_job where name=$1 and sectortype_id=$2",
+        [name, item]
+      );
+    });
+    res.json({ response: "User items was successfully deleted" });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
 
 module.exports = router;
