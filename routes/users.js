@@ -4,7 +4,7 @@ const pool = require("../db/db");
 const cors = require('cors');
 
 const corsOption = {
-  origin: ['http://localhost:3000'],
+  origin: ['https://syaddad.domcloud.io/'],
 };
 
 router.use(cors())
@@ -26,7 +26,19 @@ router.get("/",  async (req, res) => {
   }
 });
 
-
+router.get("/result", cors(), async (req, res) => {
+  
+  try {
+    let query ="select uj.sectortype_id, st.type_name from user_job uj, sector_type1 st where uj.sectortype_id = st.id UNION"
+    query = query + " select uj.sectortype_id, st2.type2_name from user_job uj, sector_type2 st2 where uj.sectortype_id = st2.id UNION"
+    query = query + " select uj.sectortype_id, st3.type_name from user_job uj, sector_type3 st3 where uj.sectortype_id = st3.id"
+     
+    const allJobs = await pool.query(query);
+    res.json(allJobs.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
+});
 //get one
 // router.get("/:id", async (req, res) => {
 //   try {
@@ -53,7 +65,7 @@ router.post("/", (req, res) => {
       );
     })
     
-    res.json(newUser.rows[0]);
+    res.json({"response": "success"});
   } catch (err) {
     console.error(err.message);
   }
